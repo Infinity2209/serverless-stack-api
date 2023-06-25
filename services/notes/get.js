@@ -1,8 +1,7 @@
 import handler from "./libs/handler-lib";
-import dynamoDb from "./libs/dynamodb-lib";
-// Some faulty code
-dynamoDb.notExist();
-export const main = handler(async (event, context) => {
+import * as dynamoDbLib from "./libs/dynamodb-lib";
+// Wrong handler function name
+export const main2 = handler(async (event, context) => {
     const params = {
         TableName: process.env.tableName,
         // 'Key' defines the partition key and sort key of the item to be retrieved
@@ -13,7 +12,7 @@ export const main = handler(async (event, context) => {
             noteId: event.pathParameters.id
         }
     };
-    const result = await dynamoDb.get(params);
+    const result = await dynamoDbLib.call("get", params);
     if (!result.Item) {
         throw new Error("Item not found.");
     }
