@@ -45,12 +45,15 @@ functions:
     # - path: url path is /notes/{id}
     # - method: GET request
     handler: get.main
+    memorySize: 128
+    timeout: 10
     events:
       - http:
           path: notes/{id}
           method: get
           cors: true
           authorizer: aws_iam
+
   list:
     # Defines an HTTP API endpoint that calls the main function in list.js
     # - path: url path is /notes
