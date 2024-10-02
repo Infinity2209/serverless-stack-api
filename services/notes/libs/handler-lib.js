@@ -1,26 +1,32 @@
-import * as debug from "./debug-lib";
-export default function handler(lambda) {
+const debug = require("./debug-lib");
+
+module.exports = function handler(lambda) {
     return async function (event, context) {
         let body, statusCode;
-        // Start debugger
+
+        // Initialize debugger with event and context
         debug.init(event, context);
+
         try {
-            // Run the Lambda
+            // Execute the Lambda function passed as argument
             body = await lambda(event, context);
-            statusCode = 200;
+            statusCode = 200; // Success HTTP status code
         } catch (e) {
-            // Print debug messages
+            // Log error details and debug messages
             debug.flush(e);
-            body = { error: e.message };
-            statusCode = 500;
+
+            // Set error response with proper message and status code
+            body = { error: e.message || "Internal Server Error" };
+            statusCode = e.statusCode || 500;
         }
-        // Return HTTP response
+
+        // Return the structured HTTP response
         return {
             statusCode,
             body: JSON.stringify(body),
             headers: {
-                "Access-Control-Allow-Origin": "*",
-                "Access-Control-Allow-Credentials": true,
+                "Access-Control-Allow-Origin": "*",  // Enable CORS
+                "Access-Control-Allow-Credentials": true,  // Allow credentials
             },
         };
     };

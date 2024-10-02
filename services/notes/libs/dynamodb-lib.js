@@ -1,6 +1,7 @@
-import AWS from "aws-sdk";
+const AWS = require("aws-sdk");
 const client = new AWS.DynamoDB.DocumentClient();
-export default {
+
+module.exports = {
     get: (params) => client.get(params).promise(),
     put: (params) => client.put(params).promise(),
     query: (params) => client.query(params).promise(),

@@ -1,22 +1,26 @@
 service: notes-api
-# Create an optimized package for our functions
 package:
   individually: true
+  exclude:
+    - node_modules/**
+    - test/**
+    - mocks/**
+    - .gitignore
+    - .git/**
+    - .env
+
 plugins:
-  - serverless-bundle # Package our functions with Webpack
   - serverless-offline
   - serverless-dotenv-plugin # Load .env as environment variables
+
 provider:
   name: aws
-  runtime: nodejs16.x
+  runtime: nodejs18.x
   stage: dev
   region: us-east-1
-  # These environment variables are made available to our functions
-  # under process.env.
   environment:
     tableName: notes
-  # 'iamRoleStatements' defines the permission policy for the Lambda function.
-  # In this case Lambda functions are granted with permissions to access DynamoDB.
+    uploadBucket: notes-app2-uploads
   iamRoleStatements:
     - Effect: Allow
       Action:
@@ -27,11 +31,23 @@ provider:
         - dynamodb:UpdateItem
         - dynamodb:DeleteItem
         - dynamodb:DescribeTable
-      Resource: "arn:aws:dynamodb:us-east-1:*:*"
+        - s3:PutObject
+        - s3:GetObject
+      Resource: 
+        - "arn:aws:dynamodb:us-east-1:*:*"
+        - "arn:aws:s3:::notes-app2-uploads/*" 
+
+custom:
+  s3:
+    deploymentBucket: your-custom-deployment-bucket-name  # Add your custom bucket name here
+
+  esbuild:
+    bundle: true
+    minify: false
+    sourcemap: true
+    exclude: ['aws-sdk']
+
 functions:
-  # Defines an HTTP API endpoint that calls the main function in create.js
-  # - path: url path is /notes
-  # - method: POST request
   create:
     handler: create.main
     events:
@@ -41,9 +57,6 @@ functions:
           cors: true
           authorizer: aws_iam
   get:
-    # Defines an HTTP API endpoint that calls the main function in get.js
-    # - path: url path is /notes/{id}
-    # - method: GET request
     handler: get.main
     events:
       - http:
@@ -52,9 +65,6 @@ functions:
           cors: true
           authorizer: aws_iam
   list:
-    # Defines an HTTP API endpoint that calls the main function in list.js
-    # - path: url path is /notes
-    # - method: GET request
     handler: list.main
     events:
       - http:
@@ -63,9 +73,6 @@ functions:
           cors: true
           authorizer: aws_iam
   update:
-    # Defines an HTTP API endpoint that calls the main function in update.js
-    # - path: url path is /notes/{id}
-    # - method: PUT request
     handler: update.main
     events:
       - http:
@@ -74,9 +81,6 @@ functions:
           cors: true
           authorizer: aws_iam
   delete:
-    # Defines an HTTP API endpoint that calls the main function in delete.js
-    # - path: url path is /notes/{id}
-    # - method: DELETE request
     handler: delete.main
     events:
       - http:
@@ -84,7 +88,6 @@ functions:
           method: delete
           cors: true
           authorizer: aws_iam
-# Create our resources with separate CloudFormation templates
+
 resources:
-  # API Gateway Errors
   - ${file(resources/api-gateway-errors.yml)}

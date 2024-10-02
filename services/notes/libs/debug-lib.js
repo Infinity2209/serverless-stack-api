@@ -1,15 +1,18 @@
-import util from "util";
-import AWS from "aws-sdk";
+const util = require("util");
+const AWS = require("aws-sdk");
 let logs;
+
 // Log AWS SDK calls
 AWS.config.logger = { log: debug };
-export default function debug() {
+
+function debug() {
     logs.push({
         date: new Date(),
         string: util.format.apply(null, arguments),
     });
 }
-export function init(event, context) {
+
+function init(event, context) {
     logs = [];
     // Log API event
     debug("API event", {
@@ -18,7 +21,10 @@ export function init(event, context) {
         queryStringParameters: event.queryStringParameters,
     });
 }
-export function flush(e) {
+
+function flush(e) {
     logs.forEach(({ date, string }) => console.debug(date, string));
     console.error(e);
 }
+
+module.exports = { debug, init, flush };
